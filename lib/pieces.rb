@@ -9,9 +9,11 @@ class White_Rook < Piece
 end
 class White_Pawn < Piece
     attr_reader :color, :symbol
+    attr_accessor :first
     def initialize
         @color = "white"
         @symbol = ("\u2659")
+        @first = true
     end
 end
 class White_Bishop < Piece
@@ -51,9 +53,11 @@ class Black_Rook < Piece
 end
 class Black_Pawn < Piece
     attr_reader :color, :symbol
+    attr_accessor :first
     def initialize
         @color = "black"
         @symbol = ("\u265F")
+        @first = true
     end
 end
 class Black_Bishop < Piece
