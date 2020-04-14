@@ -291,7 +291,7 @@ class Chess
         bishop_up_left_move(vert - 1, hori - 1, "white")
         bishop_up_right_move(vert - 1, hori + 1, "white")
         bishop_down_right_move(vert + 1, hori + 1, "white")
-        bishop_down_right_move(vert + 1, hori - 1, "white")
+        bishop_down_left_move(vert + 1, hori - 1, "white")
         if @optional.length == 0
             puts "no moves"
             return "There are no available moves"
@@ -306,7 +306,7 @@ class Chess
         bishop_up_left_move(vert - 1, hori - 1, "black")
         bishop_up_right_move(vert - 1, hori + 1, "black")
         bishop_down_right_move(vert + 1, hori + 1, "black")
-        bishop_down_right_move(vert + 1, hori - 1, "black")
+        bishop_down_left_move(vert + 1, hori - 1, "black")
         if @optional.length == 0
             puts "no moves"
             return "There are no available moves"
@@ -362,7 +362,7 @@ class Chess
         if @includer.include?([vert, hori])
             if @board[vert][hori] == " "
                 @optional.push([vert, hori])
-                bishop_down_right_move(vert + 1, hori - 1, color)
+                bishop_down_left_move(vert + 1, hori - 1, color)
             end
             if @board[vert][hori].is_a? Piece
                 if @board[vert][hori].color == color
@@ -370,6 +370,108 @@ class Chess
                 end
             end
         end
+    end
+
+    def black_queen_move(vert, hori, piece)
+        @optional = []
+        bishop_up_left_move(vert - 1, hori - 1, "white")
+        bishop_up_right_move(vert - 1, hori + 1, "white")
+        bishop_down_right_move(vert + 1, hori + 1, "white")
+        bishop_down_left_move(vert + 1, hori - 1, "white")
+        rook_down_move(vert + 1, hori, "white")
+        rook_up_move(vert - 1, hori, "white")
+        rook_left_move(vert, hori - 1, "white")
+        rook_right_move(vert, hori + 1, "white")
+        if @optional.length == 0
+            puts "no moves"
+            return "There are no available moves"
+        end
+        ask_move(@optional)
+        @board[@vert][@hori] = piece
+        @board[vert][hori] = " "
+    end
+
+    def white_queen_move(vert, hori, piece)
+        @optional = []
+        bishop_up_left_move(vert - 1, hori - 1, "black")
+        bishop_up_right_move(vert - 1, hori + 1, "black")
+        bishop_down_right_move(vert + 1, hori + 1, "black")
+        bishop_down_left_move(vert + 1, hori - 1, "black")
+        rook_down_move(vert + 1, hori, "black")
+        rook_up_move(vert - 1, hori, "black")
+        rook_left_move(vert, hori - 1, "black")
+        rook_right_move(vert, hori + 1, "black")
+        if @optional.length == 0
+            puts "no moves"
+            return "There are no available moves"
+        end
+        ask_move(@optional)
+        @board[@vert][@hori] = piece
+        @board[vert][hori] = " "
+    end
+
+    def black_king_move(vert, hori, piece)
+        optional = []
+        kings_move = [
+                        [vert + 1, hori],
+                        [vert + 1, hori - 1],
+                        [vert + 1, hori + 1],
+                        [vert - 1, hori],
+                        [vert - 1, hori - 1],
+                        [vert - 1, hori + 1],
+                        [vert, hori + 1],
+                        [vert, hori - 1]                                       
+                    ]
+        kings_move.each do |x|
+            if @includer.include?(x)
+                if @board[x[0]][x[1]] == " "
+                    optional.push(x)
+                elsif @board[x[0]][x[1]].is_a? Piece
+                    if @board[x[0]][x[1]].color == "white"
+                        optional.push(x)
+                    end
+                end
+            end
+        end
+        if optional.length == 0
+            puts "no moves"
+            return "There are no available moves"
+        end
+        ask_move(optional)
+        @board[@vert][@hori] = piece
+        @board[vert][hori] = " "
+    end
+
+    def white_king_move(vert, hori, piece)
+        optional = []
+        kings_move = [
+                        [vert + 1, hori],
+                        [vert + 1, hori - 1],
+                        [vert + 1, hori + 1],
+                        [vert - 1, hori],
+                        [vert - 1, hori - 1],
+                        [vert - 1, hori + 1],
+                        [vert, hori + 1],
+                        [vert, hori - 1]                                       
+                    ]
+        kings_move.each do |x|
+            if @includer.include?(x)
+                if @board[x[0]][x[1]] == " "
+                    optional.push(x)
+                elsif @board[x[0]][x[1]].is_a? Piece
+                    if @board[x[0]][x[1]].color == "black"
+                        optional.push(x)
+                    end
+                end
+            end
+        end
+        if optional.length == 0
+            puts "no moves"
+            return "There are no available moves"
+        end
+        ask_move(optional)
+        @board[@vert][@hori] = piece
+        @board[vert][hori] = " "
     end
 
     def ask_move(optional)

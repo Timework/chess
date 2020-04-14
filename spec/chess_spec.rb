@@ -211,4 +211,92 @@ xit "it can move properly" do
     expect(answer).to eql(TRUE)
 end
 end
+
+describe "#black_queen_move" do
+xit "No available move works" do
+    piece = @game.board[0][3]
+    @game.show_board
+    @game.black_queen_move(0, 3, piece)
+    @game.show_board
+    answer = @game.board[0][3].is_a? Black_Queen
+    expect(answer).to eql(TRUE)
+end
+
+xit "it can move properly" do
+    @game.board[4][3] = Black_Queen.new
+    piece = @game.board[4][3]
+    @game.show_board
+    @game.black_queen_move(4, 3, piece)
+    @game.show_board
+    answer = @game.board[6][5].is_a? Black_Queen
+    expect(answer).to eql(TRUE)
+end
+
+end
+
+describe "#black_queen_move" do
+xit "No available move works" do
+    piece = @game.board[7][3]
+    @game.show_board
+    @game.white_queen_move(7, 3, piece)
+    @game.show_board
+    answer = @game.board[7][3].is_a? White_Queen
+    expect(answer).to eql(TRUE)
+end
+
+xit "it can move properly" do
+    @game.board[4][3] = White_Queen.new
+    piece = @game.board[4][3]
+    @game.show_board
+    @game.white_queen_move(4, 3, piece)
+    @game.show_board
+    answer = @game.board[1][6].is_a? White_Queen
+    expect(answer).to eql(TRUE)
+end
+
+end
+
+describe "#black_king_move" do
+xit "No available move works" do
+    piece = @game.board[0][4]
+    @game.show_board
+    @game.black_king_move(0, 4, piece)
+    @game.show_board
+    answer = @game.board[0][4].is_a? Black_King
+    expect(answer).to eql(TRUE)
+end
+
+xit "can move properly" do
+    @game.board[5][3] = Black_King.new
+    @game.board[4][3] = Black_Pawn.new
+    piece = @game.board[5][3]
+    @game.show_board
+    @game.black_king_move(5, 3, piece)
+    @game.show_board
+    answer = @game.board[6][3].is_a? Black_King
+    expect(answer).to eql(TRUE)
+end
+end
+
+describe "#white_king_move" do
+xit "No available move works" do
+    piece = @game.board[7][4]
+    @game.show_board
+    @game.white_king_move(7, 4, piece)
+    @game.show_board
+    answer = @game.board[7][4].is_a? White_King
+    expect(answer).to eql(TRUE)
+end
+
+xit "can move properly" do
+    @game.board[2][3] = White_King.new
+    @game.board[3][3] = White_Pawn.new
+    piece = @game.board[2][3]
+    @game.show_board
+    @game.white_king_move(2, 3, piece)
+    @game.show_board
+    answer = @game.board[1][3].is_a? White_King
+    expect(answer).to eql(TRUE)
+end
+end
 end
