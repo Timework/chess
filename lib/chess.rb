@@ -2,6 +2,7 @@ require_relative "pieces"
 
 class Chess
     attr_accessor :board
+    attr_reader :check_black, :check_white
     def make_board
         @board = []
         blackline = []
@@ -44,6 +45,8 @@ class Chess
                 @includer.push([x, y])
             end
         end
+        @king_black = [0, 4]
+        @king_white = [7, 4]
     end
 
     def show_board
@@ -97,7 +100,8 @@ class Chess
             end
         end
         if optional.length == 0
-            return "There are no available moves"
+            puts "no moves"
+            return choose_white
         end
         num = ask_move(optional)
         @board[@vert][@hori] = pawn
@@ -128,7 +132,8 @@ class Chess
             end
         end
         if optional.length == 0
-            return "There are no available moves"
+            puts "no moves"
+            return choose_black
         end
         num = ask_move(optional)
         @board[@vert][@hori] = pawn
@@ -161,7 +166,7 @@ class Chess
         end
         if optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_black
         end
         ask_move(optional)
         @board[@vert][@hori] = piece
@@ -193,7 +198,7 @@ class Chess
         end
         if optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_white
         end
         ask_move(optional)
         @board[@vert][@hori] = piece
@@ -208,7 +213,7 @@ class Chess
         rook_right_move(vert, hori + 1, "white")
         if @optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_black
         end
         ask_move(@optional)
         @board[@vert][@hori] = piece
@@ -223,7 +228,7 @@ class Chess
         rook_right_move(vert, hori + 1, "black")
         if @optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_white
         end
         ask_move(@optional)
         @board[@vert][@hori] = piece
@@ -294,7 +299,7 @@ class Chess
         bishop_down_left_move(vert + 1, hori - 1, "white")
         if @optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_black
         end
         ask_move(@optional)
         @board[@vert][@hori] = piece
@@ -309,7 +314,7 @@ class Chess
         bishop_down_left_move(vert + 1, hori - 1, "black")
         if @optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_white
         end
         ask_move(@optional)
         @board[@vert][@hori] = piece
@@ -384,7 +389,7 @@ class Chess
         rook_right_move(vert, hori + 1, "white")
         if @optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_black
         end
         ask_move(@optional)
         @board[@vert][@hori] = piece
@@ -403,7 +408,7 @@ class Chess
         rook_right_move(vert, hori + 1, "black")
         if @optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_white
         end
         ask_move(@optional)
         @board[@vert][@hori] = piece
@@ -435,10 +440,11 @@ class Chess
         end
         if optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_black
         end
         ask_move(optional)
         @board[@vert][@hori] = piece
+        @king_black = [@vert, @hori]
         @board[vert][hori] = " "
     end
 
@@ -467,11 +473,66 @@ class Chess
         end
         if optional.length == 0
             puts "no moves"
-            return "There are no available moves"
+            return choose_white
         end
         ask_move(optional)
         @board[@vert][@hori] = piece
+        @king_white = [@vert, @hori]
         @board[vert][hori] = " "
+    end
+    
+    def black_pawn_check
+        @board[7].each_with_index do |x, y|
+            if x.is_a? Black_Pawn
+                @board[7][y] = transform_black
+            end
+        end
+    end
+
+    def transform_black
+        puts "Transform your pawn"
+        puts "Press 1 to make a rook, 2 for a bishop, 3 for a knight, 4 for a queen"
+        tran = gets.chomp
+        case tran
+        when "1"
+            return Black_Rook.new
+        when "2"
+            return Black_Bishop.new
+        when "3"
+            return Black_Knight.new
+        when "4"
+            return Black_Queen.new
+        else
+            puts "Please choose a number 1-4"
+            return transform_black
+        end
+    end
+
+    def white_pawn_check
+        @board[0].each_with_index do |x, y|
+            if x.is_a? White_Pawn
+                @board[0][y] = transform_white
+            end
+        end
+    end
+
+    def transform_white
+        puts "Transform your pawn"
+        puts "Press 1 to make a rook, 2 for a bishop, 3 for a knight, 4 for a queen"
+        tran = gets.chomp
+        case tran
+        when "1"
+            return White_Rook.new
+        when "2"
+            return White_Bishop.new
+        when "3"
+            return White_Knight.new
+        when "4"
+            return White_Queen.new
+        else
+            puts "Please choose a number 1-4"
+            return transform_white
+        end
     end
 
     def ask_move(optional)
@@ -490,6 +551,378 @@ class Chess
         else
             puts "That is not an optional move, choose again"
             ask_move(optional)
+        end
+    end
+
+    def choose_white
+        show_board
+        puts "choose a piece"
+        puts "choose vertical coordinate"
+        verts = gets.chomp
+        vert = verts.to_i
+        puts "choose horizontal coordinate"
+        horis = gets.chomp
+        hori = horis.to_i
+        if @includer.include? ([vert, hori])
+            puts "included"
+            if @board[vert][hori].is_a? Piece
+                puts "pieced"
+                if @board[vert][hori].color == "white"
+                    puts "colored"
+                    piece = @board[vert][hori]
+                    if @board[vert][hori].is_a? White_Pawn
+                        white_pawn_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? White_Bishop
+                        white_bishop_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? White_Rook
+                        white_rook_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? White_Knight
+                        white_knight_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? White_Queen
+                        white_queen_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? White_King
+                        white_king_move(vert, hori, piece)
+                        return
+                    end
+                end
+            end
+        end
+        puts "That is not a valid piece"
+        return choose_white
+    end
+
+    def choose_black
+        show_board
+        puts "choose a piece"
+        puts "choose vertical coordinate"
+        verts = gets.chomp
+        vert = verts.to_i
+        puts "choose horizontal coordinate"
+        horis = gets.chomp
+        hori = horis.to_i
+        if @includer.include? ([vert, hori])
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == "black"
+                    piece = @board[vert][hori]
+                    if @board[vert][hori].is_a? Black_Pawn
+                        black_pawn_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? Black_Bishop
+                        black_bishop_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? Black_Rook
+                        black_rook_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? Black_Knight
+                        black_knight_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? Black_Queen
+                        black_queen_move(vert, hori, piece)
+                        return
+                    elsif @board[vert][hori].is_a? Black_King
+                        black_king_move(vert, hori, piece)
+                        return
+                    end
+                end
+            end
+        end
+        puts "That is not a valid piece"
+        return choose_black
+    end
+
+    def is_check_black?
+        @all_options = []
+        @board.each_with_index do |x, index_x|
+            x.each_with_index do |y, index_y|
+                if y.is_a? Piece
+                    if y.color == "white"
+                        if y.is_a? White_Pawn
+                            all_pawn_white(index_x, index_y, y)
+                        elsif y.is_a? White_Rook
+                            all_rook(index_x, index_y, "black")
+                        elsif y.is_a? White_Bishop
+                            all_bishop(index_x, index_y, "black")
+                        elsif y.is_a? White_Knight
+                            all_knight(index_x, index_y, "black")
+                        elsif y.is_a? White_Queen
+                            all_queen(index_x, index_y, "black")
+                        elsif y.is_a? White_King
+                            all_king(index_x, index_y, "black")
+                        end
+                    end
+                end
+            end
+        end
+        if @all_options.include? (@king_black)
+            @check_black = TRUE
+        else
+            @check_black = FALSE
+        end
+    end
+
+    def all_pawn_white(vert, hori, pawn)
+        if vert - 1 >= 0
+            if @board[vert - 1][hori] == " "
+                @all_options.push([vert-1, hori])
+                if vert - 2 >= 0 && pawn.first
+                     if @board[vert - 2][hori] == " "
+                        @all_options.push([vert - 2, hori])
+                     end
+                 end
+            end
+        end
+        if @board[vert - 1][hori + 1].is_a? Piece
+            if @board[vert - 1][hori + 1].color == "black"
+                @all_options.push([vert - 1, hori + 1])
+            end
+        end
+        if @board[vert - 1][hori - 1].is_a? Piece
+            if @board[vert - 1][hori - 1].color == "black"
+                @all_options.push([vert - 1, hori - 1])
+            end
+        end
+    end
+
+    def all_knight(vert, hori, color)
+        knights_move = [
+                        [vert + 1, hori + 2],
+                        [vert - 1, hori + 2],
+                        [vert - 2, hori + 1],
+                        [vert + 2, hori + 1],
+                        [vert + 1, hori - 2],
+                        [vert - 1, hori - 2],
+                        [vert - 2, hori - 1],
+                        [vert + 2, hori - 1]                                       
+                    ]
+        knights_move.each do |x|
+            if @includer.include?(x)
+                if @board[x[0]][x[1]] == " "
+                    @all_options.push(x)
+                elsif @board[x[0]][x[1]].is_a? Piece
+                    if @board[x[0]][x[1]].color == color
+                        @all_options.push(x)
+                    end
+                end
+            end
+        end
+    end
+
+    def all_bishop(vert, hori, color)
+        bishop_up_left_move_all(vert - 1, hori - 1, color)
+        bishop_up_right_move_all(vert - 1, hori + 1, color)
+        bishop_down_right_move_all(vert + 1, hori + 1, color)
+        bishop_down_left_move_all(vert + 1, hori - 1, color)
+    end
+
+    def bishop_up_left_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                bishop_up_left_move_all(vert - 1, hori - 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def bishop_up_right_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                bishop_up_right_move_all(vert - 1, hori + 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def bishop_down_right_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                bishop_down_right_move_all(vert + 1, hori + 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def bishop_down_left_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                bishop_down_left_move_all(vert + 1, hori - 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def all_rook(vert, hori, color)
+        rook_down_move_all(vert + 1, hori, color)
+        rook_up_move_all(vert - 1, hori, color)
+        rook_left_move_all(vert, hori - 1, color)
+        rook_right_move_all(vert, hori + 1, color)
+    end
+
+    def rook_down_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                rook_down_move_all(vert + 1, hori, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def rook_up_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                rook_up_move_all(vert - 1, hori, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def rook_left_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                rook_left_move_all(vert, hori - 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def rook_right_move_all(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @all_options.push([vert, hori])
+                rook_right_move_all(vert, hori + 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @all_options.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def all_queen(vert, hori, color)
+        rook_down_move_all(vert + 1, hori, color)
+        rook_up_move_all(vert - 1, hori, color)
+        rook_left_move_all(vert, hori - 1, color)
+        rook_right_move_all(vert, hori + 1, color)
+        bishop_up_left_move_all(vert - 1, hori - 1, color)
+        bishop_up_right_move_all(vert - 1, hori + 1, color)
+        bishop_down_right_move_all(vert + 1, hori + 1, color)
+        bishop_down_left_move_all(vert + 1, hori - 1, color)
+    end
+
+    def all_king(vert, hori, color)
+        kings_move = [
+                        [vert + 1, hori],
+                        [vert + 1, hori - 1],
+                        [vert + 1, hori + 1],
+                        [vert - 1, hori],
+                        [vert - 1, hori - 1],
+                        [vert - 1, hori + 1],
+                        [vert, hori + 1],
+                        [vert, hori - 1]                                       
+                    ]
+        kings_move.each do |x|
+            if @includer.include?(x)
+                if @board[x[0]][x[1]] == " "
+                    @all_options.push(x)
+                elsif @board[x[0]][x[1]].is_a? Piece
+                    if @board[x[0]][x[1]].color == color
+                        @all_options.push(x)
+                    end
+                end
+            end
+        end
+    end
+
+    def is_check_white?
+        @all_options = []
+        @board.each_with_index do |x, index_x|
+            x.each_with_index do |y, index_y|
+                if y.is_a? Piece
+                    if y.color == "black"
+                        if y.is_a? Black_Pawn
+                            all_pawn_black(index_x, index_y, y)
+                        elsif y.is_a? Black_Rook
+                            all_rook(index_x, index_y, "white")
+                        elsif y.is_a? Black_Bishop
+                            all_bishop(index_x, index_y, "white")
+                        elsif y.is_a? Black_Knight
+                            all_knight(index_x, index_y, "white")
+                        elsif y.is_a? Black_Queen
+                            all_queen(index_x, index_y, "white")
+                        elsif y.is_a? Black_King
+                            all_king(index_x, index_y, "white")
+                        end
+                    end
+                end
+            end
+        end
+        if @all_options.include? (@king_white)
+            @check_white = TRUE
+        else
+            @check_white = FALSE
+        end
+    end
+
+    def all_pawn_black(vert, hori, pawn)
+        if vert + 1 <= 7
+            if @board[vert + 1][hori] == " "
+                @all_options.push([vert+1, hori])
+                if vert + 2 <= 7 && pawn.first
+                     if @board[vert + 2][hori] == " "
+                            @all_options.push([vert + 2, hori])
+                    end
+                end
+            end
+        end
+        if @board[vert + 1][hori + 1].is_a? Piece
+            if @board[vert + 1][hori + 1].color == "white"
+                @all_options.push([vert + 1, hori + 1])
+            end
+        end
+        if @board[vert + 1][hori - 1].is_a? Piece
+            if @board[vert + 1][hori - 1].color == "white"
+                @all_options.push([vert + 1, hori - 1])
+            end
         end
     end
 end

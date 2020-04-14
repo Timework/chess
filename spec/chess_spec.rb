@@ -299,4 +299,186 @@ xit "can move properly" do
     expect(answer).to eql(TRUE)
 end
 end
+
+describe "#black_pawn_check" do
+xit "can transform nothing" do
+    @game.black_pawn_check
+    answer = @game.board[7][2].is_a? Black_Rook
+    expect(answer).to eql(FALSE)
+end
+
+xit "transforms properly into rook" do
+    @game.board[7][2] = Black_Pawn.new
+    @game.board[7][1] = Black_Queen.new
+    @game.black_pawn_check
+    answer = @game.board[7][2].is_a? Black_Rook
+    expect(answer).to eql(TRUE)
+end
+
+xit "transforms properly into bishop" do
+    @game.board[7][2] = Black_Pawn.new
+    @game.board[7][1] = Black_Queen.new
+    @game.black_pawn_check
+    answer = @game.board[7][2].is_a? Black_Bishop
+    expect(answer).to eql(TRUE)
+end
+
+xit "transforms properly into knight" do
+    @game.board[7][2] = Black_Pawn.new
+    @game.board[7][1] = Black_Queen.new
+    @game.black_pawn_check
+    answer = @game.board[7][2].is_a? Black_Knight
+    expect(answer).to eql(TRUE)
+end
+
+xit "transforms properly into queen" do
+    @game.board[7][2] = Black_Pawn.new
+    @game.board[7][1] = Black_Queen.new
+    @game.black_pawn_check
+    answer = @game.board[7][2].is_a? Black_Queen
+    expect(answer).to eql(TRUE)
+end
+end
+
+describe "#white_pawn_check" do
+xit "can transform nothing" do
+    @game.white_pawn_check
+    answer = @game.board[0][2].is_a? White_Rook
+    expect(answer).to eql(FALSE)
+end
+
+xit "transforms properly into rook" do
+    @game.board[0][2] = White_Pawn.new
+    @game.board[0][1] = White_Queen.new
+    @game.white_pawn_check
+    answer = @game.board[0][2].is_a? White_Rook
+    expect(answer).to eql(TRUE)
+end
+
+xit "transforms properly into bishop" do
+    @game.board[0][2] = White_Pawn.new
+    @game.board[0][1] = White_Queen.new
+    @game.white_pawn_check
+    answer = @game.board[0][2].is_a? White_Bishop
+    expect(answer).to eql(TRUE)
+end
+
+xit "transforms properly into knight" do
+    @game.board[0][2] = White_Pawn.new
+    @game.board[0][1] = White_Queen.new
+    @game.white_pawn_check
+    answer = @game.board[0][2].is_a? White_Knight
+    expect(answer).to eql(TRUE)
+end
+
+xit "transforms properly into queen" do
+    @game.board[0][2] = White_Pawn.new
+    @game.board[0][1] = White_Queen.new
+    @game.white_pawn_check
+    answer = @game.board[0][2].is_a? White_Queen
+    expect(answer).to eql(TRUE)
+end
+end
+
+describe "#choose_white" do
+xit "can redirect properly" do
+    @game.choose_white
+    answer = @game.board[5][2].is_a? White_Knight
+    expect(answer).to eql(TRUE)
+end
+end
+
+describe "@choose_black" do
+    xit "can redirect properly" do
+        @game.choose_black
+        answer = @game.board[2][2].is_a? Black_Knight
+        expect(answer).to eql(TRUE)
+    end
+end
+
+describe "#is_check_black?" do
+xit "returns false when it is false" do
+    @game.is_check_black?
+    expect(@game.check_black).to eql(FALSE)
+end
+
+xit "returns true when there is a pawn" do
+    @game.board[1][5] = White_Pawn.new
+    @game.is_check_black?
+    expect(@game.check_black).to eql(TRUE)
+end
+
+xit "returns true when there is a bishop" do
+    @game.board[1][5] = White_Bishop.new
+    @game.is_check_black?
+    expect(@game.check_black).to eql(TRUE)
+end
+
+xit "returns true when there is a queen" do
+    @game.board[1][5] = White_Queen.new
+    @game.is_check_black?
+    expect(@game.check_black).to eql(TRUE)
+end
+
+xit "returns true when there is a rook" do
+    @game.board[1][4] = White_Rook.new
+    @game.is_check_black?
+    expect(@game.check_black).to eql(TRUE)
+end
+
+xit "returns true when there is a knight" do
+    @game.board[1][6] = White_Knight.new
+    @game.is_check_black?
+    expect(@game.check_black).to eql(TRUE)
+end
+
+xit "returns true when there is a king" do
+    @game.board[1][5] = White_King.new
+    @game.is_check_black?
+    expect(@game.check_black).to eql(TRUE)
+end
+end
+
+describe "#is_check_white?" do
+it "returns false when it is false" do
+    @game.is_check_white?
+    expect(@game.check_white).to eql(FALSE)
+end
+
+it "returns true when there is a pawn" do
+    @game.board[6][5] = Black_Pawn.new
+    @game.is_check_white?
+    expect(@game.check_white).to eql(TRUE)
+end
+
+it "returns true when there is a bishop" do
+    @game.board[6][5] = Black_Bishop.new
+    @game.is_check_white?
+    expect(@game.check_white).to eql(TRUE)
+end
+
+it "returns true when there is a queen" do
+    @game.board[6][5] = Black_Queen.new
+    @game.is_check_white?
+    expect(@game.check_white).to eql(TRUE)
+end
+
+it "returns true when there is a rook" do
+    @game.board[6][4] = Black_Rook.new
+    @game.is_check_white?
+    expect(@game.check_white).to eql(TRUE)
+end
+
+it "returns true when there is a knight" do
+    @game.board[6][6] = Black_Knight.new
+    @game.is_check_white?
+    expect(@game.check_white).to eql(TRUE)
+end
+
+it "returns true when there is a king" do
+    @game.board[6][5] = Black_King.new
+    @game.is_check_white?
+    expect(@game.check_white).to eql(TRUE)
+end
+end
 end
