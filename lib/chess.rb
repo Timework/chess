@@ -1,8 +1,9 @@
 require_relative "pieces"
+require "yaml"
 
 class Chess
     attr_accessor :board
-    attr_reader :check_black, :check_white
+    attr_reader :check_black, :check_white, :checkmate
     def make_board
         @board = []
         blackline = []
@@ -47,7 +48,479 @@ class Chess
         end
         @king_black = [0, 4]
         @king_white = [7, 4]
+        @turn = "white"
+        @checkmate = false
+        @check_white = false
+        @check_black = false
     end
+
+    def save
+        game = YAML::dump(self)
+        File.open("save_game.txt", "w").puts game
+        puts "Game Saved"
+        exit
+    end
+
+    def open_question
+        puts "Type 1 for a new game or type 2 to load a game."
+        @resultz = gets.chomp
+        if @resultz != "1" && @resultz != "2"
+            open_question
+        end
+    end
+    
+    def question
+        puts "press 1 to play or 2 to save"
+        @result = gets.chomp
+        if @result != "1" && @result != "2"
+            question
+        end
+    end
+
+    def startup
+        open_question
+        if @resultz == "1"
+            play
+        else
+            load_game
+        end
+    end
+
+        def load_game
+        game = File.read("save_game.txt")
+        game = YAML::load(game)
+        @current = game
+        @current.play
+    end
+
+    def play
+        while !@checkmate
+            question
+            if @result == "1"
+            if @turn == "white"
+                white_block
+            else
+                black_block
+            end
+        else
+            save
+        end
+        end
+        show_board
+    end
+    
+    def white_block
+        puts "white's turn"
+        boardholder = Marshal.load(Marshal.dump(@board))
+        choose_white
+        white_pawn_check
+        is_check_white?
+        if @check_white
+            puts "You cannot be in check"
+            @board = Marshal.load(Marshal.dump(boardholder))
+            white_block
+        else
+            @turn = "black"
+        end
+        is_check_black?
+        if @check_black
+            puts "check"
+            king_escape_black
+        end
+
+    end
+
+    def black_block
+        puts "black's turn"
+        boardholder = Marshal.load(Marshal.dump(@board))
+        choose_black
+        black_pawn_check
+        is_check_black?
+        if @check_black
+            puts "You cannot be in check"
+            @board = Marshal.load(Marshal.dump(boardholder))
+            black_block
+        else
+            @turn = "white"
+        end
+        is_check_white?
+        if @check_white
+            puts "check"
+            king_escape_white
+        end
+    end
+
+    def king_escape_white
+        @escapes = 0
+        @board.each_with_index do |x, index_x|
+            x.each_with_index do |y, index_y|
+                if y.is_a? Piece
+                    if y.color == "black"
+                        if y.is_a? White_Pawn
+                            white_pawn_escape(index_x, index_y, y)
+                        elsif y.is_a? White_Rook
+                            rook_escape(index_x, index_y, "black")
+                        elsif y.is_a? White_Bishop
+                            bishop_escape(index_x, index_y, "black")
+                        elsif y.is_a? White_Knight
+                            knight_escape(index_x, index_y, "black")
+                        elsif y.is_a? White_Queen
+                            queen_escape(index_x, index_y, "black")
+                        elsif y.is_a? White_King
+                            king_escape(index_x, index_y, "black")
+                        end
+                    end
+                end
+            end
+        end
+        if @escapes == 0
+            puts "black won"
+            @checkmate = true
+        end
+    end
+
+    def white_pawn_escape(vert, hori, pawn)
+        optional = []
+        if vert - 1 >= 0
+            if @board[vert - 1][hori] == " "
+                optional.push([vert-1, hori])
+                if vert - 2 >= 0 && pawn.first
+                     if @board[vert - 2][hori] == " "
+                        optional.push([vert - 2, hori])
+                     end
+                 end
+            end
+        end
+        if @board[vert - 1][hori + 1].is_a? Piece
+            if @board[vert - 1][hori + 1].color == "black"
+                optional.push([vert - 1, hori + 1])
+            end
+        end
+        if @board[vert - 1][hori - 1].is_a? Piece
+            if @board[vert - 1][hori - 1].color == "black"
+                optional.push([vert - 1, hori - 1])
+            end
+        end
+        if optional.length == 0
+            return
+        else
+            optional.each do |x|
+                tempboard = Marshal.load(Marshal.dump(@board))
+                tempboard[x[0]][x[1]] = piece
+                tempboard[vert][hori] = " "
+                is_check_white?
+                if !@check_white
+                    @escapes += 1
+                end
+            end
+        end
+    end
+
+    def king_escape_black
+        @escapes = 0
+        @board.each_with_index do |x, index_x|
+            x.each_with_index do |y, index_y|
+                if y.is_a? Piece
+                    if y.color == "black"
+                        if y.is_a? Black_Pawn
+                            black_pawn_escape(index_x, index_y, y)
+                        elsif y.is_a? Black_Rook
+                            rook_escape(index_x, index_y, "white")
+                        elsif y.is_a? Black_Bishop
+                            bishop_escape(index_x, index_y, "white")
+                        elsif y.is_a? Black_Knight
+                            knight_escape(index_x, index_y, "white")
+                        elsif y.is_a? Black_Queen
+                            queen_escape(index_x, index_y, "white")
+                        elsif y.is_a? Black_King
+                            king_escape(index_x, index_y, "white")
+                        end
+                    end
+                end
+            end
+        end
+        if @escapes == 0
+            puts "white won"
+            @checkmate = true
+        end
+    end
+
+    def king_escape(vert, hori, color)
+        piece = @board[vert][hori]
+        optional = []
+        kings_move = [
+                        [vert + 1, hori],
+                        [vert + 1, hori - 1],
+                        [vert + 1, hori + 1],
+                        [vert - 1, hori],
+                        [vert - 1, hori - 1],
+                        [vert - 1, hori + 1],
+                        [vert, hori + 1],
+                        [vert, hori - 1]                                       
+                    ]
+        kings_move.each do |x|
+            if @includer.include?(x)
+                if @board[x[0]][x[1]] == " "
+                    optional.push(x)
+                elsif @board[x[0]][x[1]].is_a? Piece
+                    if @board[x[0]][x[1]].color == color
+                        optional.push(x)
+                    end
+                end
+            end
+        end
+        if optional.length == 0
+            return 
+        else
+            optional.each do |x|
+            tempboard = Marshal.load(Marshal.dump(@board))
+            tempboard[x[0]][x[1]] = piece
+            tempboard[vert][hori] = " "
+            if color == "white"
+            is_check_black?
+            if !@check_black
+                @escapes += 1
+            end
+        else
+            is_check_white?
+            if !@check_white
+                @escapes += 1
+            end
+        end
+    end
+    end
+    end
+
+    def queen_escape(vert, hori, color)
+        piece = @board[vert][hori]
+        @optional = []
+        bishop_up_left_move(vert - 1, hori - 1, color)
+        bishop_up_right_move(vert - 1, hori + 1, color)
+        bishop_down_right_move(vert + 1, hori + 1, color)
+        bishop_down_left_move(vert + 1, hori - 1, color)
+        rook_down_move(vert + 1, hori, color)
+        rook_up_move(vert - 1, hori, color)
+        rook_left_move(vert, hori - 1, color)
+        rook_right_move(vert, hori + 1, color)
+        if @optional.length == 0
+            return
+        else
+        @optional.each do |x|
+        tempboard = Marshal.load(Marshal.dump(@board))
+            tempboard[x[0]][x[1]] = piece
+            tempboard[vert][hori] = " "
+            if color == "white"
+            is_check_black?
+            if !@check_black
+                @escapes += 1
+            end
+        else
+            is_check_white?
+            if !@check_white
+                @escapes += 1
+            end
+        end
+        end
+        end
+    end
+
+    def knight_escape(vert, hori, color)
+        piece = @board[vert][hori]
+        optional = []
+        knights_move = [
+                        [vert + 1, hori + 2],
+                        [vert - 1, hori + 2],
+                        [vert - 2, hori + 1],
+                        [vert + 2, hori + 1],
+                        [vert + 1, hori - 2],
+                        [vert - 1, hori - 2],
+                        [vert - 2, hori - 1],
+                        [vert + 2, hori - 1]                                       
+                    ]
+        knights_move.each do |x|
+            if @includer.include?(x)
+                if @board[x[0]][x[1]] == " "
+                    optional.push(x)
+                elsif @board[x[0]][x[1]].is_a? Piece
+                    if @board[x[0]][x[1]].color == color
+                        optional.push(x)
+                    end
+                end
+            end
+        end
+        if optional.length == 0
+            return 
+        else
+            optional.each do |x|
+            tempboard = Marshal.load(Marshal.dump(@board))
+            tempboard[x[0]][x[1]] = piece
+            tempboard[vert][hori] = " "
+            if color == "white"
+            is_check_black?
+            if !@check_black
+                @escapes += 1
+            end
+        else
+            is_check_white?
+            if !@check_white
+                @escapes += 1
+            end
+        end
+        end
+        end
+    end
+
+    def bishop_escape(vert, hori, color)
+        piece = @board[vert][hori]
+        @optional = []
+        bishop_up_left_move(vert - 1, hori - 1, color)
+        bishop_up_right_move(vert - 1, hori + 1, color)
+        bishop_down_right_move(vert + 1, hori + 1, color)
+        bishop_down_left_move(vert + 1, hori - 1, color)
+        if @optional.length == 0
+            return
+        else
+        @optional.each do |x|
+        tempboard = Marshal.load(Marshal.dump(@board))
+            tempboard[x[0]][x[1]] = piece
+            tempboard[vert][hori] = " "
+            if color == "white"
+            is_check_black?
+            if !@check_black
+                @escapes += 1
+            end
+        else
+            is_check_white?
+            if !@check_white
+                @escapes += 1
+            end
+        end
+        end
+        end
+    end
+
+    def rook_escape(vert, hori, color)
+        @rook_moves = []
+        rook_down_move_escape(vert + 1, hori, color)
+        rook_up_move_escape(vert - 1, hori, color)
+        rook_left_move_escape(vert, hori - 1, color)
+        rook_right_move_escape(vert, hori + 1, color)
+        if @rook_moves.length == 0
+            return
+        else
+            piece = @board[vert][hori]
+            @rook_moves.each do |x|
+                tempboard = Marshal.load(Marshal.dump(@board))
+                tempboard[x[0]][x[1]] = piece
+                tempboard[vert][hori] = " "
+                if color == "white"
+            is_check_black?
+            if !@check_black
+                @escapes += 1
+            end
+        else
+            is_check_white?
+            if !@check_white
+                @escapes += 1
+            end
+        end
+            end
+        end
+    end
+
+    def rook_down_move_escape(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @rook_moves.push([vert, hori])
+                rook_down_move_escape(vert + 1, hori, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @rook_moves.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def rook_up_move_escape(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @rook_moves.push([vert, hori])
+                rook_up_move_escape(vert - 1, hori, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @rook_moves.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def rook_left_move_escape(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @rook_moves.push([vert, hori])
+                rook_left_move_escape(vert, hori - 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @rook_moves.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def rook_right_move_escape(vert, hori, color)
+        if @includer.include?([vert, hori])
+            if @board[vert][hori] == " "
+                @rook_moves.push([vert, hori])
+                rook_right_move_escape(vert, hori + 1, color)
+            end
+            if @board[vert][hori].is_a? Piece
+                if @board[vert][hori].color == color
+                    @rook_moves.push([vert, hori])
+                end
+            end
+        end
+    end
+
+    def black_pawn_escape(vert, hori, piece)
+        optional = []
+        if vert + 1 <= 7
+            if @board[vert + 1][hori] == " "
+                optional.push([vert+1, hori])
+                if vert + 2 <= 7 && piece.first
+                     if @board[vert + 2][hori] == " "
+                            optional.push([vert + 2, hori])
+                    end
+                end
+            end
+        end
+        if @board[vert + 1][hori + 1].is_a? Piece
+            if @board[vert + 1][hori + 1].color == "white"
+                optional.push([vert + 1, hori + 1])
+            end
+        end
+        if @board[vert + 1][hori - 1].is_a? Piece
+            if @board[vert + 1][hori - 1].color == "white"
+                optional.push([vert + 1, hori - 1])
+            end
+        end
+        if optional.length == 0
+            return
+        else
+            optional.each do |x|
+                tempboard = Marshal.load(Marshal.dump(@board))
+                tempboard[x[0]][x[1]] = piece
+                tempboard[vert][hori] = " "
+                is_check_black?
+                if !@check_black
+                    @escapes += 1
+                end
+            end
+        end
+    end
+
 
     def show_board
         @show_board = []
@@ -564,11 +1037,8 @@ class Chess
         horis = gets.chomp
         hori = horis.to_i
         if @includer.include? ([vert, hori])
-            puts "included"
             if @board[vert][hori].is_a? Piece
-                puts "pieced"
                 if @board[vert][hori].color == "white"
-                    puts "colored"
                     piece = @board[vert][hori]
                     if @board[vert][hori].is_a? White_Pawn
                         white_pawn_move(vert, hori, piece)

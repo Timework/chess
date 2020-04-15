@@ -440,45 +440,52 @@ end
 end
 
 describe "#is_check_white?" do
-it "returns false when it is false" do
+xit "returns false when it is false" do
     @game.is_check_white?
     expect(@game.check_white).to eql(FALSE)
 end
 
-it "returns true when there is a pawn" do
+xit "returns true when there is a pawn" do
     @game.board[6][5] = Black_Pawn.new
     @game.is_check_white?
     expect(@game.check_white).to eql(TRUE)
 end
 
-it "returns true when there is a bishop" do
+xit "returns true when there is a bishop" do
     @game.board[6][5] = Black_Bishop.new
     @game.is_check_white?
     expect(@game.check_white).to eql(TRUE)
 end
 
-it "returns true when there is a queen" do
+xit "returns true when there is a queen" do
     @game.board[6][5] = Black_Queen.new
     @game.is_check_white?
     expect(@game.check_white).to eql(TRUE)
 end
 
-it "returns true when there is a rook" do
+xit "returns true when there is a rook" do
     @game.board[6][4] = Black_Rook.new
     @game.is_check_white?
     expect(@game.check_white).to eql(TRUE)
 end
 
-it "returns true when there is a knight" do
+xit "returns true when there is a knight" do
     @game.board[6][6] = Black_Knight.new
     @game.is_check_white?
     expect(@game.check_white).to eql(TRUE)
 end
 
-it "returns true when there is a king" do
+xit "returns true when there is a king" do
     @game.board[6][5] = Black_King.new
     @game.is_check_white?
     expect(@game.check_white).to eql(TRUE)
+end
+end
+
+describe "#play" do
+it "works" do
+    @game.startup
+    expect(@game.checkmate).to eql(TRUE)
 end
 end
 end
