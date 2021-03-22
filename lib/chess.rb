@@ -1396,3 +1396,7 @@ class Chess
         end
     end
 end
+
+@game = Chess.new
+@game.make_board
+@game.startup
