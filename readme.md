@@ -10,4 +10,4 @@ ruby chess.rb
 
 You must have ruby in order to play the game.
 
-White pieces are on the bottom while black pieces are on the top. You can choose to save the game and come back to after every turn.
+White pieces are on the bottom while black pieces are on the top. You can choose to save the game after every turn and come back to it later.
