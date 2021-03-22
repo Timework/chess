@@ -3,7 +3,9 @@ This is a chess game runned in ruby, developed using TDD with rspec.
 In order to start the game clone the git repository then run the following commands when you are in the download location in your terminal.
 
 cd chess
+
 cd lib
+
 ruby chess.rb
 
 You must have ruby in order to play the game.
